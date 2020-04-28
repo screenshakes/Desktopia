@@ -176,7 +176,7 @@ namespace Desktopia
         }
 
         /// <summary>
-        /// Sets the size of the window, in pixel;
+        /// Sets the size of the window, in pixel.
         /// </summary>
         public void SetSize(Vector2 size)
         {

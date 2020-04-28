@@ -64,7 +64,7 @@ namespace Desktopia
 
         #region Publics
         /// <summary>
-        /// Sets the cursor position, in pixel;
+        /// Sets the cursor position, in pixel.
         /// </summary>
         public static void SetPosition(int x, int y)
         {
@@ -72,7 +72,7 @@ namespace Desktopia
         }
 
         /// <summary>
-        /// Sets the cursor position, in pixel;
+        /// Sets the cursor position, in pixel.
         /// </summary>
         public static void SetPosition(Vector2 position)
         {

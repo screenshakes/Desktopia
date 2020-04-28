@@ -483,7 +483,6 @@ namespace Desktopia
         /// </summary>
         public static bool GetMouseButtonDown(int button)
         {
-            UnityEngine.Debug.Log(mouseDown.Count);
             return mouseDown.Contains(button);
         }
 

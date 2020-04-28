@@ -104,7 +104,7 @@ namespace Desktopia
 
         #region Publics
         /// <summary>
-        /// Returns the window colliders list.
+        /// Returns the windows collider list.
         /// </summary>
         public static Dictionary<Window, Transform>.ValueCollection List { get { return dictionary.Values; } }
 
