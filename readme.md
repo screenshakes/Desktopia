@@ -1,8 +1,22 @@
 ![alt text](./Textures/Desktopia.png)
 
-### Desktopia is a library that helps you easily build desktop games and experiences in Unity.
+### Desktopia is a library that helps you to easily build Windows desktop games and experiences in Unity.
 
 #### [Forum](https://unnamedcollective.itch.io/desktopia/community) - [Twitter](https://twitter.com/screenshakes) - [Discord](https://discord.gg/CkwAZKM)
+
+  
+
+  
+**Getting started**
+------------
+
+Try one of the example scenes or drop the [Desktopia] prefab into one your scene and check the features you want to try out.  
+Be aware that enabling window modifiers while testing in the editor will result into weird behaviours and it is recommended to try those in a build.
+  
+**If your transparent window does not work:**  
+Got to to Project Settings > Resolution and Presentation  
+Uncheck "Use DXGI Flip Model Swapchain for D3D11" 
+
 
   
 
@@ -45,7 +59,3 @@ _Used to have screen space collision between objects and the opened windows._
 ### **File Drag and Drop**
 
 _Used to add callbacks that get invoked when a user drops a file into the window._
-  
-**If your transparent window does not work:**  
-Got to to Project Settings > Resolution and Presentation  
-Uncheck "Use DXGI Flip Model Swapchain for D3D11"
