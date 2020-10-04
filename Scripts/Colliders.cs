@@ -40,25 +40,30 @@ namespace Desktopia
         {
             Colliders.prefab = prefab;
             core.SubscribeModule(Update);
+            Windows.AddOnWindowOpened(AddCollider);
+            Windows.AddOnWindowClosed(RemoveCollider);
 
             dictionary = new Dictionary<Window, Transform>();
             ComputeScreenToWorld();
         }
 
+        static void AddCollider(Window window)
+        {
+            var c = GameObject.Instantiate(prefab, Vector3.zero, Quaternion.identity);
+            c.name = window.Title;
+            dictionary.Add(window, c);
+        }
+
+        static void RemoveCollider(Window window)
+        {
+            var transform = dictionary[window];
+            dictionary.Remove(window);
+            GameObject.Destroy(transform.gameObject);
+        }
+
         static void Update()
         {
-            foreach(var w in Windows.List)
-            if(!dictionary.ContainsKey(w))
-                dictionary.Add(w, GameObject.Instantiate(prefab, Vector3.zero, Quaternion.identity));
-
-            List<Window> toRemove = new List<Window>();
-
             foreach(var p in dictionary)
-            if(!Windows.List.Contains(p.Key))
-            {
-                toRemove.Add(p.Key);
-            }
-            else
             {
                 var window = p.Key;
                 var collider = p.Value;
@@ -68,9 +73,6 @@ namespace Desktopia
                      collider.localScale = Vector3.zero;
                 else collider.localScale = ScreenToWorldSize(window.Rect.size);
             }
-
-            foreach(var w in toRemove)
-                dictionary.Remove(w);
         }
 
         #region Helpers

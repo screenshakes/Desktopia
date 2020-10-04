@@ -88,6 +88,8 @@ namespace Desktopia
 
         public static Window Main;
         static Dictionary<IntPtr, Window> dictionary;
+        static List<IntPtr> removedWindows;
+        static List<Action<Window>> onWindowOpened, onWindowClosed;
 
         internal static void GetMain()
         {
@@ -98,12 +100,19 @@ namespace Desktopia
         internal static void Initialize(Core core)
         {
             core.SubscribeModule(Update);
-            dictionary = new Dictionary<IntPtr, Window>();
+
+            dictionary     = new Dictionary<IntPtr, Window>();
+            onWindowOpened = new List<Action<Window>>();
+            onWindowClosed = new List<Action<Window>>();
+            removedWindows = new List<IntPtr>();
         }
 
         static void Update()
         {
             IntPtr shellWindow = GetShellWindow();
+
+            foreach(var ptr in dictionary.Keys)
+            removedWindows.Add(ptr);
 
             EnumDesktopWindows(IntPtr.Zero, delegate(IntPtr handle, int lParam)
             {
@@ -121,11 +130,29 @@ namespace Desktopia
                     var window = dictionary[handle];
                     window.Title = GetTitle(handle, length);
                     window.Rect  = GetRect(handle);
+                    removedWindows.Remove(handle);
                 }
-                else dictionary.Add(handle, new Window(handle, GetWindowLong(handle, Window.GWL_STYLE), GetTitle(handle, length), GetRect(handle)));
+                else
+                {
+                    var window = new Window(handle, GetWindowLong(handle, Window.GWL_STYLE), GetTitle(handle, length), GetRect(handle));
+                    dictionary.Add(handle, window);
+                    
+                    foreach(var a in onWindowOpened)
+                        a.Invoke(window);
+                }
                 
                 return true;
             }, IntPtr.Zero);
+
+            foreach(var ptr in removedWindows)
+            {
+                foreach(var a in onWindowClosed)
+                    a.Invoke(dictionary[ptr]);
+
+                dictionary.Remove(ptr);
+            }
+
+            removedWindows.Clear();
         }
 
         #region Helpers
@@ -159,6 +186,42 @@ namespace Desktopia
         /// Returns the desktop windows list.
         /// </summary>
         public static Dictionary<IntPtr, Window>.ValueCollection List { get { return dictionary.Values; } }
+
+        /// <summary>
+        /// Adds an action that is executed when a new window is opened
+        /// </summary>
+        public static Action<Window> AddOnWindowOpened(Action<Window> action)
+        {
+            onWindowOpened.Add(action);
+            return action;
+        }
+
+         /// <summary>
+        /// Removes an action that is executed when a new window is opened
+        /// </summary>
+        public static Action<Window> RemoveOnWindowOpened(Action<Window> action)
+        {
+            onWindowOpened.Remove(action);
+            return action;
+        }
+
+        /// <summary>
+        /// Adds an action that is executed when a window is closed
+        /// </summary>
+        public static Action<Window> AddOnWindowClosed(Action<Window> action)
+        {
+            onWindowClosed.Add(action);
+            return action;
+        }
+
+         /// <summary>
+        /// Removes an action that is executed when a window is closed
+        /// </summary>
+        public static Action<Window> RemoveOnWindowClosed(Action<Window> action)
+        {
+            onWindowClosed.Remove(action);
+            return action;
+        }
         #endregion
     }
 }
