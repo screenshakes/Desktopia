@@ -70,9 +70,15 @@ namespace Desktopia
             if(colliders) Colliders.Initialize(this, collider);
             if(dragDrop)  Files.DragDrop.Enable();
             
+            #if UNITY_EDITOR
+            if(transparent)  UnityEngine.Debug.LogWarning("[Desktopia/Core] 'Transparent' modifier on main window skipped because running in editor.");
+            if(topMost)      UnityEngine.Debug.LogWarning("[Desktopia/Core] 'Top Most' modifier on main window skipped because running in editor.");
+            if(clickThrough) UnityEngine.Debug.LogWarning("[Desktopia/Core] 'Click Through' modifier on main window skipped because running in editor.");
+            #else
             Windows.Main.SetTransparent(transparent);
             Windows.Main.SetTopMost(topMost);
             Windows.Main.SetClickThrough(clickThrough);
+            #endif
         }
 
         void Update()
