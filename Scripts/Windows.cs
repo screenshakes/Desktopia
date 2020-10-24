@@ -84,9 +84,13 @@ namespace Desktopia
 
         [DllImport("dwmapi.dll")]
         static extern int DwmGetWindowAttribute(IntPtr window, int dwAttribute, out bool pvAttribute, int cbAttribute);
+        
+        [DllImport("user32.dll")]
+        static extern IntPtr GetForegroundWindow();
         #endregion
 
         public static Window Main;
+        public static Window Focused;
         static Dictionary<IntPtr, Window> dictionary;
         static List<IntPtr> removedWindows;
         static List<Action<Window>> onWindowOpened, onWindowClosed;
@@ -153,6 +157,9 @@ namespace Desktopia
             }
 
             removedWindows.Clear();
+            
+            IntPtr focusedPtr = GetForegroundWindow();
+            Focused = dictionary.ContainsKey(focusedPtr) ? dictionary[focusedPtr] : null;
         }
 
         #region Helpers
