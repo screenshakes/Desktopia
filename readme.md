@@ -1,4 +1,4 @@
-![alt text](./Textures/Desktopia.png)
+![](./Editor/Textures/Desktopia.png)
 
 ### Desktopia is a library that helps you to easily build Windows desktop games and experiences in Unity.
 
