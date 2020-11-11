@@ -15,7 +15,7 @@ public class SphereSpawner : MonoBehaviour
         spheres = new List<GameObject>();
         Desktopia.Inputs.AddOnKeyDown(KeyCode.Space, Spawn);
     }
-
+    
     void Spawn()
     {
         spheres.Add(Instantiate(sphere, Desktopia.Colliders.ScreenToWorldPosition(Desktopia.Cursor.Position), Quaternion.identity));

@@ -1,0 +1,14 @@
+{
+    "author":
+    {
+        "name": "Constantin Liétard",
+        "url": "https://twitter.com/screenshakes"
+    },
+
+    "description": "Library that helps you to easily build Windows desktop games and experiences in Unity.",
+    "displayName": "Desktopia",
+    "name": "club.screenshake.desktopia",
+    "version": "0.1.1",
+    "license": "MIT",
+    "unity": "2020.1"
+}
