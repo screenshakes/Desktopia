@@ -4,14 +4,19 @@
 
 #### [Forum](https://unnamedcollective.itch.io/desktopia/community) - [Twitter](https://twitter.com/screenshakes) - [Discord](https://discord.gg/CkwAZKM)
 
-  
+
+
+**Install**
+------------
+In Unity go into **Windows** > **Package Manager**.  
+In the Package Manager, click the **+** sign then **Add package from git url**.  
+Paste this url: https://github.com/screenshakes/Desktopia.git then click **add**.
 
   
 **Getting started**
 ------------
 
-Try one of the example scenes or drop the [Desktopia] prefab into one your scene and check the features you want to try out.  
-Be aware that enabling window modifiers while testing in the editor will result into weird behaviours and it is recommended to try those in a build.
+Import the **samples scenes** into your project from the **package manager** or drop the **[Desktopia]** prefab into one your scene and check the features you want to try out.  
   
 **If your transparent window does not work:**  
 Got to to Project Settings > Resolution and Presentation  
