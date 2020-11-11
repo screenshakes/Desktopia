@@ -10,5 +10,34 @@
     "name": "club.screenshake.desktopia",
     "version": "0.1.1",
     "license": "MIT",
-    "unity": "2020.1"
+    "unity": "2020.1",
+
+    "samples":
+    [
+        {
+          "displayName": "Transparent Window",     
+          "path": "Samples~/01_TransparentWindow",
+          "description": "Your very first transparent window"
+        },
+        {
+            "displayName": "Move Cursor",     
+            "path": "Samples~/02_MoveCursor",
+            "description": "Move the cursor without touching the mouse"
+        },
+        {
+            "displayName": "Inputs",     
+            "path": "Samples~/03_Inputs",
+            "description": "Listening and reacting to system wide inputs"
+        },
+        {
+            "displayName": "Collisions",     
+            "path": "Samples~/04_Collisions",
+            "description": "Colliding with the opened windows"
+        },
+        {
+            "displayName": "Drag & Drop",     
+            "path": "Samples~/05_DragDrop",
+            "description": "Handling dragging files into your app"
+        }
+    ]
 }
