@@ -2,7 +2,7 @@
 
 ### Desktopia is a library that helps you to easily build Windows desktop games and experiences in Unity.
 
-#### [Forum](https://unnamedcollective.itch.io/desktopia/community) - [Twitter](https://twitter.com/screenshakes) - [Discord](https://discord.gg/CkwAZKM)
+#### [Forum](https://unnamedcollective.itch.io/desktopia/community) - [Twitter](https://twitter.com/screenshakes) - [Discord](https://discord.gg/yPVq4a9bcw)
 
 
 
