@@ -76,6 +76,10 @@ namespace Desktopia
         const uint WS_EX_LAYERED     = 0x00080000;
         const uint WS_EX_TRANSPARENT = 0x00000020;
 
+        const int SWP_NOSIZE = 0x0001;
+        const int SWP_NOMOVE = 0x0002;
+        const int SWP_SHOWWINDOW = 0x0040;
+
         const int WM_SETTEXT = 0x000C;
         
         const int HWND_TOPMOST   = -1;
@@ -188,7 +192,7 @@ namespace Desktopia
         /// </summary>
         public void SetTopMost(bool topMost)
         {
-            SetWindowPos(Handle, topMost ? HWND_TOPMOST : HWND_NOTOPMOST, (int) Rect.x, (int) Rect.y, (int) Rect.width, (int) Rect.height, 32 | 64);
+            SetWindowPos(Handle, topMost ? HWND_TOPMOST : HWND_NOTOPMOST, 0, 0, 0, 0, SWP_NOMOVE | SWP_NOSIZE | SWP_SHOWWINDOW);
         }
 
         /// <summary>
