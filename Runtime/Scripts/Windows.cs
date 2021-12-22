@@ -27,6 +27,7 @@ SOFTWARE.
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Runtime.InteropServices;
+using AOT;
 using System.Text;
 using System;
 using UnityEngine;
@@ -94,6 +95,7 @@ namespace Desktopia
         static Dictionary<IntPtr, Window> dictionary;
         static List<IntPtr> removedWindows;
         static List<Action<Window>> onWindowOpened, onWindowClosed;
+        static IntPtr shellWindow;
 
         internal static void GetMain()
         {
@@ -113,40 +115,12 @@ namespace Desktopia
 
         static void Update()
         {
-            IntPtr shellWindow = GetShellWindow();
+            shellWindow = GetShellWindow();
 
             foreach(var ptr in dictionary.Keys)
             removedWindows.Add(ptr);
 
-            EnumDesktopWindows(IntPtr.Zero, delegate(IntPtr handle, int lParam)
-            {
-                if (handle == shellWindow) return true;
-                if (!IsWindowVisible(handle)) return true;
-
-                int length = GetWindowTextLength(handle);
-                if (length == 0) return true;
-
-                DwmGetWindowAttribute(handle, (int)DwmWindowAttribute.Cloaked, out bool isCloacked, Marshal.SizeOf(typeof(bool)));
-                if (isCloacked) return true;    
-
-                if(dictionary.ContainsKey(handle))
-                {
-                    var window = dictionary[handle];
-                    window.Title = GetTitle(handle, length);
-                    window.Rect  = GetRect(handle);
-                    removedWindows.Remove(handle);
-                }
-                else
-                {
-                    var window = new Window(handle, GetWindowLong(handle, Window.GWL_STYLE), GetTitle(handle, length), GetRect(handle));
-                    dictionary.Add(handle, window);
-                    
-                    foreach(var a in onWindowOpened)
-                        a.Invoke(window);
-                }
-                
-                return true;
-            }, IntPtr.Zero);
+            EnumDesktopWindows(IntPtr.Zero, EnumCallback, IntPtr.Zero);
 
             foreach(var ptr in removedWindows)
             {
@@ -160,6 +134,37 @@ namespace Desktopia
             
             IntPtr focusedPtr = GetForegroundWindow();
             Focused = dictionary.ContainsKey(focusedPtr) ? dictionary[focusedPtr] : null;
+        }
+
+        [MonoPInvokeCallback(typeof(EnumDelegate))]
+        static bool EnumCallback(IntPtr handle, int lParam)
+        {
+            if (handle == shellWindow) return true;
+            if (!IsWindowVisible(handle)) return true;
+
+            int length = GetWindowTextLength(handle);
+            if (length == 0) return true;
+
+            DwmGetWindowAttribute(handle, (int)DwmWindowAttribute.Cloaked, out bool isCloacked, Marshal.SizeOf(typeof(bool)));
+            if (isCloacked) return true;    
+
+            if(dictionary.ContainsKey(handle))
+            {
+                var window = dictionary[handle];
+                window.Title = GetTitle(handle, length);
+                window.Rect  = GetRect(handle);
+                removedWindows.Remove(handle);
+            }
+            else
+            {
+                var window = new Window(handle, GetWindowLong(handle, Window.GWL_STYLE), GetTitle(handle, length), GetRect(handle));
+                dictionary.Add(handle, window);
+                
+                foreach(var a in onWindowOpened)
+                    a.Invoke(window);
+            }
+                
+            return true;
         }
 
         #region Helpers
