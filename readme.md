@@ -57,6 +57,10 @@ _Used to listen to system-wide inputs._
 
 _Used to modify the position of the cursor._
 
+### **Taskbar**
+
+_Used to get the position and size of the taskbar._
+
 ### **Colliders**
 
 _Used to have screen space collision between objects and the opened windows._
