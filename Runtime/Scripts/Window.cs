@@ -62,19 +62,60 @@ namespace Desktopia
 
         [DllImport("dwmapi.dll")]
         static extern uint DwmExtendFrameIntoClientArea(IntPtr hWnd, ref Margins margins);
+        
+        [DllImport("user32.dll", SetLastError = true)]
+        static extern IntPtr FindWindow(string lpClassName, string lpWindowName);
+
+        [DllImport("user32.dll", SetLastError = true)]
+        static extern IntPtr FindWindowEx(IntPtr parentHandle, IntPtr childAfter, string lpszClass, string lpszWindow);
+
+        [DllImport("user32.dll", SetLastError = true)]
+        static extern IntPtr SetParent(IntPtr hWndChild, IntPtr hWndNewParent);
+
+        [DllImport("user32.dll", SetLastError = true)]
+        static extern IntPtr SendMessageTimeout(IntPtr hWnd, uint Msg, IntPtr wParam, IntPtr lParam,
+            uint fuFlags, uint uTimeout, out IntPtr lpdwResult);
+        
+        [DllImport("user32.dll", SetLastError = true)]
+        static extern bool SetLayeredWindowAttributes(IntPtr hWnd, uint crKey, byte bAlpha, uint dwFlags);
+        
+        [DllImport("user32.dll", SetLastError = true)]
+        static extern bool EnumWindows(EnumWindowsProc lpEnumFunc, IntPtr lParam);
+
+        [DllImport("user32.dll", SetLastError = true)]
+        static extern IntPtr GetParent(IntPtr hWnd);
+
+        [DllImport("user32.dll", SetLastError = true)]
+        static extern bool GetWindowRect(IntPtr hWnd, ref RECT lpRect);
+
+        [DllImport("user32.dll", SetLastError = true)]
+        static extern IntPtr GetDesktopWindow();
+
+        public delegate bool EnumWindowsProc(IntPtr hWnd, IntPtr lParam);
+
         #endregion
 
         #region Constants
         internal const int GWL_STYLE   = -16;
         internal const int GWL_EXSTYLE = -20;
+        
+        const int SW_HIDE = 0;
+        const int SW_SHOW = 5;
 
         const int SW_MAXIMIZE = 3;
         const int SW_MINIMIZE = 6;
 
         const uint WS_POPUP          = 0x80000000;
-        const uint WS_VISIBLE        = 0x10000000;
         const uint WS_EX_LAYERED     = 0x00080000;
         const uint WS_EX_TRANSPARENT = 0x00000020;
+        
+        const uint WS_CHILD       = 0x40000000;
+        const uint WS_VISIBLE     = 0x10000000;
+        const uint WS_CLIPSIBLINGS= 0x04000000;
+        const uint WS_CLIPCHILDREN= 0x02000000;
+
+        const uint WS_EX_NOACTIVATE   = 0x08000000;
+        const uint WS_EX_TOOLWINDOW   = 0x00000080;
 
         const int SWP_NOSIZE = 0x0001;
         const int SWP_NOMOVE = 0x0002;
@@ -84,10 +125,29 @@ namespace Desktopia
         
         const int HWND_TOPMOST   = -1;
         const int HWND_NOTOPMOST = -2;
+
+        const int WM_SPAWN_WORKER = 0x052C;
+        const int SMTO_BLOCK = 0x0001;
+        const int LWA_ALPHA = 0x0002;
+        const int SWP_SHOWWINDOW_AND_FRAMECHANGED = 0x0060;
         #endregion
 
+        #region Data
+        [StructLayout(LayoutKind.Sequential)]
+        public struct RECT
+        {
+            public int Left;
+            public int Top;
+            public int Right;
+            public int Bottom;
+        }
+        #endregion
+        
         internal IntPtr Handle;
         uint baseStyle;
+        
+        static IntPtr wallpaperClickWindow1 = IntPtr.Zero;
+        static IntPtr wallpaperClickWindow2 = IntPtr.Zero;
 
         public Rect Rect         { get; internal set; }
         public string Title      { get; internal set; }
@@ -188,7 +248,7 @@ namespace Desktopia
         }
 
         /// <summary>
-        /// Sets wether or not the window is place in front of all the other non-topmost windows.
+        /// Sets wether or not the window is placed in front of all the other non-topmost windows.
         /// </summary>
         public void SetTopMost(bool topMost)
         {
@@ -281,6 +341,95 @@ namespace Desktopia
         public void SendText(string text)
         {
             SendMessage(Handle, WM_SETTEXT, 0, text);
+        }
+        
+        /// <summary>
+        ///  Sets the window as wallpaper.
+        /// </summary>
+        public void SetAsWallpaper()
+        {
+            var targetRect = Rect;
+
+            var progman = FindWindow("Progman", "Program Manager");
+            
+            if (progman == IntPtr.Zero)
+            {
+                progman = GetDesktopWindow();
+                if (progman == IntPtr.Zero)
+                {
+                    return;
+                }
+            }
+
+            IntPtr result;
+            SendMessageTimeout(progman, WM_SPAWN_WORKER, IntPtr.Zero, IntPtr.Zero, SMTO_BLOCK, 1000U, out result);
+
+            SendMessageTimeout(progman, WM_SPAWN_WORKER, new IntPtr(13), new IntPtr(1), SMTO_BLOCK, 1000U, out result);
+
+            var workerw = IntPtr.Zero;
+            var wallpaperWorker = IntPtr.Zero;
+
+            while (true)
+            {
+                workerw = FindWindowEx(IntPtr.Zero, workerw, "WorkerW", null);
+                if (workerw == IntPtr.Zero) break;
+
+                var parent = GetParent(workerw);
+                if (parent == progman)
+                {
+                    wallpaperWorker = workerw;
+                    break;
+                }
+            }
+
+            if (wallpaperWorker == IntPtr.Zero)
+            {
+                EnumWindows((topHandle, lParam) =>
+                {
+                    var defView = FindWindowEx(topHandle, IntPtr.Zero, "SHELLDLL_DefView", null);
+                    if (defView != IntPtr.Zero)
+                    {
+                        var foundWorker = FindWindowEx(topHandle, defView, "WorkerW", null);
+                        if (foundWorker != IntPtr.Zero)
+                        {
+                            wallpaperWorker = foundWorker;
+                            wallpaperClickWindow1 = defView;
+                            wallpaperClickWindow2 = FindWindowEx(defView, IntPtr.Zero, "SysListView32", null);
+                            return false;
+                        }
+                    }
+                    return true;
+                }, IntPtr.Zero);
+            }
+
+            if (wallpaperWorker == IntPtr.Zero)
+            {
+                wallpaperWorker = FindWindowEx(IntPtr.Zero, IntPtr.Zero, "WorkerW", null);
+                if (wallpaperWorker == IntPtr.Zero)
+                {
+                    return;
+                }
+            }
+
+            SetParent(Handle, wallpaperWorker);
+            SetWindowLong(Handle, -16, 1342177280U);
+            SetWindowLong(Handle, -20, 134742016U);
+            SetLayeredWindowAttributes(Handle, 0U, byte.MaxValue, LWA_ALPHA);
+
+            var bgRect = default(RECT);
+            if (GetWindowRect(wallpaperWorker, ref bgRect))
+            {
+                var offsetX = (int)targetRect.x - bgRect.Left;
+                var offsetY = (int)targetRect.y - bgRect.Top;
+                var width   = (int)targetRect.width;
+                var height  = (int)targetRect.height;
+
+                SetWindowPos(Handle, 0, offsetX, offsetY, width, height, SWP_SHOWWINDOW_AND_FRAMECHANGED);
+            }
+            else
+            {
+                SetWindowPos(Handle, 0, (int)targetRect.x, (int)targetRect.y, (int)targetRect.width, (int)targetRect.height, SWP_SHOWWINDOW_AND_FRAMECHANGED);
+            }
         }
         #endregion
     }

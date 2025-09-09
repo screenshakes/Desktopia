@@ -54,6 +54,7 @@ namespace Desktopia
         [SerializeField] bool transparent;
         [SerializeField] bool topMost;
         [SerializeField] bool clickThrough;
+        [SerializeField] bool wallpaper;
         #endregion
 
         void OnEnable()
@@ -74,17 +75,19 @@ namespace Desktopia
             if(transparent)  UnityEngine.Debug.LogWarning("[Desktopia/Core] 'Transparent' modifier on main window skipped because running in editor.");
             if(topMost)      UnityEngine.Debug.LogWarning("[Desktopia/Core] 'Top Most' modifier on main window skipped because running in editor.");
             if(clickThrough) UnityEngine.Debug.LogWarning("[Desktopia/Core] 'Click Through' modifier on main window skipped because running in editor.");
+            if(wallpaper)    UnityEngine.Debug.LogWarning("[Desktopia/Core] 'Wallpaper' modifier on main window skipped because running in editor.");
             #else
             Windows.Main.SetTransparent(transparent);
             Windows.Main.SetTopMost(topMost);
             Windows.Main.SetClickThrough(clickThrough);
-            #endif
+            if (wallpaper) Windows.Main.SetAsWallpaper();
+           #endif
         }
 
         void Update()
         {
-            foreach(var u in modulesUpdate)
-                u.Invoke();
+            foreach(var update in modulesUpdate)
+                update.Invoke();
         }
 
         void OnDisable()
@@ -114,7 +117,7 @@ namespace Desktopia
         static bool modules, main;
 
         static SerializedProperty inputs, cursor, windows, colliders, collider, dragDrop;
-        static SerializedProperty transparent, clickThrough, topMost;
+        static SerializedProperty transparent, clickThrough, topMost, wallpaper;
 
         void OnEnable()
         {
@@ -128,6 +131,7 @@ namespace Desktopia
             transparent  = serializedObject.FindProperty("transparent");
             clickThrough = serializedObject.FindProperty("clickThrough");
             topMost      = serializedObject.FindProperty("topMost");
+            wallpaper      = serializedObject.FindProperty("wallpaper");
 
             header = new GUIStyle(EditorStyles.foldout)
             {
@@ -195,11 +199,12 @@ namespace Desktopia
             EditorGUILayout.BeginVertical(box);
             main = EditorGUILayout.Foldout(main, "Main Window", header);
 
-            if(main)
+            if (main)
             {
-                EditorGUILayout.PropertyField(transparent,  new GUIContent("Transparent"));
+                EditorGUILayout.PropertyField(transparent, new GUIContent("Transparent"));
                 EditorGUILayout.PropertyField(clickThrough, new GUIContent("Click Through"));
-                EditorGUILayout.PropertyField(topMost,      new GUIContent("Top Most"));
+                EditorGUILayout.PropertyField(topMost, new GUIContent("Top Most"));
+                EditorGUILayout.PropertyField(wallpaper, new GUIContent("Wallpaper"));
             }
             EditorGUILayout.EndVertical();
         }
